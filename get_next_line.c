@@ -52,16 +52,40 @@ char	*ft_delete_line(char *buffer)
 	i++;
 	j = 0;
 	while (buffer[i])
-		line[j++] = buffer[i++];
+	{
+		line[j] = buffer[i];
+		i++;
+		j++;
+	}
 	free(buffer);
 	return (line);
+}
+
+char	*ft_read_loop(int fd, char *residual, char *buffer)
+{
+	int	byte_read;
+	int	is_line_found;
+
+	byte_read = 1;
+	is_line_found = 0;
+	while (byte_read > 0 && !is_line_found)
+	{
+		byte_read = read(fd, buffer, BUFFER_SIZE);
+		if (byte_read == -1)
+			return (NULL);
+		buffer[byte_read] = 0;
+		residual = ft_free(residual, buffer);
+		if (!residual)
+			return (NULL);
+		is_line_found = (byte_read == 0 || ft_strchr(residual, '\n') != NULL);
+	}
+	return (residual);
 }
 
 char	*ft_read(int fd, char *residual)
 {
 	char	*buffer;
-	int		byte_read;
-	int		is_line_found;
+	char	*new_residual;
 
 	if (!residual)
 		residual = ft_calloc(1, 1);
@@ -71,30 +95,16 @@ char	*ft_read(int fd, char *residual)
 		free(residual);
 		return (NULL);
 	}
-	byte_read = 1;
-	is_line_found = 0;
-	while (byte_read > 0 && !is_line_found)
-	{
-		byte_read = read(fd, buffer, BUFFER_SIZE);
-		if (byte_read == -1)
-		{
-			free(buffer);
-			free(residual);
-			return (NULL);
-		}
-		buffer[byte_read] = 0;
-		residual = ft_free(residual, buffer);
-		if (!residual)
-			return (NULL);
-		is_line_found = (byte_read == 0 || ft_strchr(residual, '\n') != NULL);
-	}
+	new_residual = ft_read_loop(fd, residual, buffer);
 	free(buffer);
-	return (residual);
+	if (!new_residual)
+		free(residual);
+	return (new_residual);
 }
 
 char	*get_next_line(int fd)
 {
-	static char	*buffer = NULL;
+	static char	*buffer;
 	char		*line;
 
 	if (fd < 0 || BUFFER_SIZE <= 0 || read(fd, 0, 0) < 0)
@@ -110,93 +120,3 @@ char	*get_next_line(int fd)
 	buffer = ft_delete_line(buffer);
 	return (line);
 }
-
-/*char	*ft_read(int fd, char *residual)
-{
-	char	*buffer;
-	int		byte_read;
-
-	if (!residual)
-		residual = ft_calloc(1, 1);
-	buffer = ft_calloc(BUFFER_SIZE + 1, sizeof(char));
-	if (!buffer)
-	{
-		free(residual);
-		return (NULL);
-	}
-	byte_read = 1;
-	while (byte_read > 0 && !ft_strchr(buffer, '\n'))
-	{
-		byte_read = read(fd, buffer, BUFFER_SIZE);
-		if (byte_read == -1)
-		{
-			free(buffer);
-			free(residual);
-			return (NULL);
-		}
-		buffer[byte_read] = 0;
-		residual = ft_free(residual, buffer);
-		if (!residual)
-		{
-			free(residual);
-			return (NULL);
-		}
-	}
-	free(buffer);
-	return (residual);
-}
-
-char	*get_next_line(int fd)
-{
-	static char	*buffer;
-	char		*line;
-
-	if (fd < 0 || BUFFER_SIZE <= 0 || read(fd, 0, 0) < 0)
-		return (NULL);
-	buffer = ft_read(fd, buffer);
-	if (!buffer)
-		return (NULL);
-	line = ft_ret_line(buffer);
-	buffer = ft_delete_line(buffer);
-	return (line);
-}
-
-char	*get_next_line(int fd)
-{
-	static char	*residual;
-	char		*line;
-	char		*nl_position;
-
-	if (fd < 0 || BUFFER_SIZE <= 0)
-		return (NULL);
-	printf("fd valide\n");
-	residual = read_and_update(fd, residual);
-	if (residual == NULL)
-		return (NULL);
-	printf("fd valide\n");
-	nl_position = find_new_line(residual);
-	if (nl_position == NULL)
-	{
-		line = ft_strdup(residual);
-		free(residual);
-		residual = NULL;
-		return (line);
-	}
-	line = ft_substr(residual, 0, nl_position - residual + 1);
-	residual = ft_strdup(nl_position + 1);
-	return (line);
-}*/
-
-/*#include <fcntl.h>
-
-int	main(void)
-{
-	int fd = open("bjr.txt", O_RDONLY);
-	if (fd == -1)
-	{
-    	printf("Erreur lors de l'ouverture du fichier\n");
-        return 1;
-	}
-	printf("%s\n", get_next_line(fd));
-	return (0);
-}*/
