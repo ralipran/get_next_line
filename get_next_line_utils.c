@@ -6,7 +6,7 @@
 /*   By: ralipran <ralipran@>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/19 12:33:31 by ralipran          #+#    #+#             */
-/*   Updated: 2024/11/30 21:09:04 by ralipran         ###   ########.fr       */
+/*   Updated: 2024/12/18 15:00:16 by ralipran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,18 +56,18 @@ char	*ft_strchr(const char *s, int chardel)
 		return (NULL);
 }
 
-char	*ft_free(char *buf, char *buffer)
+char	*ft_join_and_free(char *buf, char *buffer)
 {
-	char	*temp;
+	char	*joined;
 
-	temp = ft_strjoin(buf, buffer);
-	if (!temp)
+	joined = ft_strjoin(buf, buffer);
+	if (!joined)
 	{
-		free(temp);
+		free(joined);
 		return (NULL);
 	}
 	free(buf);
-	return (temp);
+	return (joined);
 }
 
 char	*ft_strjoin(const char *s1, const char *s2)

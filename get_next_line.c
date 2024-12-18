@@ -6,7 +6,7 @@
 /*   By: ralipran <ralipran@>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/19 12:33:38 by ralipran          #+#    #+#             */
-/*   Updated: 2024/11/30 21:01:14 by ralipran         ###   ########.fr       */
+/*   Updated: 2024/12/18 15:03:17 by ralipran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,45 +61,48 @@ char	*ft_delete_line(char *buffer)
 	return (line);
 }
 
-char	*ft_read_loop(int fd, char *residual, char *buffer)
+char	*ft_read_loop(int fd, char *data_treat, char *buffer)
 {
 	int	byte_read;
-	int	is_line_found;
+	int	is_nl_found;
 
 	byte_read = 1;
-	is_line_found = 0;
-	while (byte_read > 0 && !is_line_found)
+	is_nl_found = 0;
+	while (byte_read > 0 && !is_nl_found)
 	{
 		byte_read = read(fd, buffer, BUFFER_SIZE);
 		if (byte_read == -1)
 			return (NULL);
 		buffer[byte_read] = 0;
-		residual = ft_free(residual, buffer);
-		if (!residual)
+		data_treat = ft_join_and_free(data_treat, buffer);
+		if (!data_treat)
 			return (NULL);
-		is_line_found = (byte_read == 0 || ft_strchr(residual, '\n') != NULL);
+		if (byte_read == 0)
+			is_nl_found = 0;
+		else if (ft_strchr(data_treat, '\n') != NULL)
+			is_nl_found = 1;
 	}
-	return (residual);
+	return (data_treat);
 }
 
-char	*ft_read(int fd, char *residual)
+char	*ft_read(int fd, char *data_treat)
 {
 	char	*buffer;
-	char	*new_residual;
+	char	*new_data_treat;
 
-	if (!residual)
-		residual = ft_calloc(1, 1);
+	if (!data_treat)
+		data_treat = ft_calloc(1, 1);
 	buffer = ft_calloc(BUFFER_SIZE + 1, sizeof(char));
 	if (!buffer)
 	{
-		free(residual);
+		free(data_treat);
 		return (NULL);
 	}
-	new_residual = ft_read_loop(fd, residual, buffer);
+	new_data_treat = ft_read_loop(fd, data_treat, buffer);
 	free(buffer);
-	if (!new_residual)
-		free(residual);
-	return (new_residual);
+	if (!new_data_treat)
+		free(data_treat);
+	return (new_data_treat);
 }
 
 char	*get_next_line(int fd)
